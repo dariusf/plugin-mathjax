@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-var Promise = require('q');
-var crc     = require('crc');
-var mjAPI   = require('mathjax-node/lib/mj-single.js');
-
-var started   = false;
-=======
 var Q = require('q');
 var fs = require('fs');
 var path = require('path');
@@ -13,9 +6,8 @@ var exec = require('child_process').exec;
 var mjAPI = require('mathjax-node/lib/mj-single.js');
 
 var started = false;
->>>>>>> master
 var countMath = 0;
-var cache     = {};
+var cache = {};
 
 /**
     Prepare MathJaX
@@ -45,27 +37,27 @@ function prepareMathJax() {
     @return {Promise<String>}
 */
 function convertTexToSvg(tex, options) {
-    var d = Promise.defer();
+    var d = Q.defer();
     options = options || {};
 
     prepareMathJax();
 
     mjAPI.typeset({
-        math:         tex,
-        format:       (options.inline ? 'inline-TeX' : 'TeX'),
-        svg:          true,
-        speakText:    true,
-        speakRuleset: 'mathspeak',
-        speakStyle:   'default',
-        ex:           6,
-        width:        100,
-        linebreaks:   true
-    }, function(data) {
+        math:           tex,
+        format:         (options.inline ? 'inline-TeX' : 'TeX'),
+        svg:            true,
+        speakText:      true,
+        speakRuleset:   'mathspeak',
+        speakStyle:     'default',
+        ex:             6,
+        width:          100,
+        linebreaks:     true
+    }, function (data) {
         if (data.errors) {
             return d.reject(new Error(data.errors));
         }
 
-        d.resolve(options.write ? null : data.svg);
+        d.resolve(options.write? null : data.svg);
     });
 
     return d.promise;
@@ -74,36 +66,37 @@ function convertTexToSvg(tex, options) {
 /**
     Process a math block
 
-    @param {Block} block
-    @return {Promise<props>}
+    @param {Block} blk
+    @return {Promise<Block>}
 */
-function processBlock(block) {
-    var book     = this;
-    var tex      = block.children;
-    var isInline = !(tex[0] == '\n');
-    var config   = book.config.get('pluginsConfig.mathjax', {});
+function processBlock(blk) {
+    var book = this;
+    var tex = blk.body;
+    var isInline = !(tex[0] == "\n");
 
-    return Promise()
-    .then(function() {
-        // For website return as script
-        if ((book.output.name == 'website' || book.output.name == 'json')
-            && !config.forceSVG) {
-            return {
-                isSVG:   false,
-                content: block.children,
-                inline:  isInline
-            };
-        }
+    // For website return as script
+    var config = book.config.get('pluginsConfig.mathjax', {});
 
-        // Get key for cache
-        var hashTex = crc.crc32(tex).toString(16);
+    if ((book.output.name == "website" || book.output.name == "json")
+        && !config.forceSVG) {
+        return '<script type="math/tex; '+(isInline? "": "mode=display")+'">'+blk.body+'</script>';
+    }
 
-        // Compute SVG filename
-        var imgFilename = '_mathjax_' + hashTex + '.svg';
+    // Check if not already cached
+    var hashTex = crc.crc32(tex).toString(16);
 
-        return Promise()
-        .then(function() {
-            // Check if not already cached
+    // Return
+    var imgFilename = '_mathjax_' + hashTex + '.svg';
+    var img = '<img src="/' + imgFilename + '" />';
+
+    // Center math block
+    if (!isInline) {
+        img = '<div style="text-align:center;margin: 1em 0em;width: 100%;">' + img + '</div>';
+    }
+
+    return {
+        body: img,
+        post: function() {
             if (cache[hashTex]) {
                 return;
             }
@@ -115,24 +108,35 @@ function processBlock(block) {
             .then(function(svg) {
                 return book.output.writeFile(imgFilename, svg);
             });
-        })
-        .then(function() {
-            return {
-                isSVG:    true,
-                filename: imgFilename,
-                inline:   isInline
-            };
-        });
-    });
+        }
+    };
+}
+
+/**
+    Return assets for website
+
+    @return {Object}
+*/
+function getWebsiteAssets() {
+    var version = this.config.get('pluginsConfig.mathjax.version', '2.6.1');
+
+    return {
+        assets: "./book",
+        js: [
+            'https://cdnjs.cloudflare.com/ajax/libs/mathjax/' + version + '/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
+            'plugin.js'
+        ]
+    };
 }
 
 module.exports = {
+    website: getWebsiteAssets,
     blocks: {
         math: {
             shortcuts: {
-                parsers: [ 'markdown', 'asciidoc' ],
-                start:   '$$',
-                end:     '$$'
+                parsers: ["markdown", "asciidoc"],
+                start: "$$",
+                end: "$$"
             },
             process: processBlock
         }
