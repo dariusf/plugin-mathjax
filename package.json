@@ -1,42 +1,22 @@
 {
-    "name": "gitbook-plugin-mathjax",
-    "description": "MathJAX integration into GitBook to display math and latex equations",
-    "main": "index.js",
-    "version": "1.1.2",
-    "engines": {
-        "gitbook": ">=3.0.0"
-    },
-    "dependencies": {
-        "mathjax-node": "0.5.2",
-        "mathjax": "^2.7.0",
-        "q": "^1.1.2",
-        "crc": "^3.2.1"
-    },
-    "homepage": "https://github.com/GitbookIO/plugin-mathjax",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/GitbookIO/plugin-mathjax.git"
-    },
-    "license": "Apache-2.0",
-    "bugs": {
-        "url": "https://github.com/GitbookIO/plugin-mathjax/issues"
-    },
-    "keywords": [
-        "math",
-        "latex"
-    ],
-    "gitbook": {
-        "properties": {
-            "forceSVG": {
-                "type": "boolean",
-                "title": "Force use of SVG images",
-                "default": false
-            },
-            "version": {
-                "type": "string",
-                "title": "Version of MathJAX to use for website rendering",
-                "default": "2.6.1"
-            }
-        }
-    }
+  "name": "honkit-plugin-mathjax",
+  "description": "MathJAX integration into GitBook to display math and latex equations",
+  "main": "index.js",
+  "version": "0.0.1",
+  "engines": {
+    "gitbook": ">=3.0.0"
+  },
+  "homepage": "https://github.com/dariusf/plugin-mathjax",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dariusf/plugin-mathjax.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dariusf/plugin-mathjax/issues"
+  },
+  "keywords": [
+    "math",
+    "latex"
+  ]
 }
